@@ -1,0 +1,6 @@
+{
+  "name": "Utsav - Indian Festivals, Panchang & Muhurat",
+  "description": "Indian festive calendar, auspicious muhurat timings, puja rituals, and celebration notes preparation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
