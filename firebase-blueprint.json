@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "Festival": {
+      "title": "Festival",
+      "description": "Indian festival record including dates, tithi, muhurat times, and rituals.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "hindiName": { "type": "string" },
+        "month": { "type": "string" },
+        "day": { "type": "string" },
+        "date": { "type": "string" },
+        "tithi": { "type": "string" },
+        "vikramSamvat": { "type": "string" },
+        "countdown": { "type": "string" },
+        "description": { "type": "string" },
+        "region": { "type": "string" },
+        "shubhMuhurat": { "type": "string" },
+        "shubhMuhuratWindow": { "type": "string" },
+        "category": { "type": "string" },
+        "notesCount": { "type": "number" },
+        "isSpotlight": { "type": "boolean" },
+        "heroImage": { "type": "string" },
+        "rituals": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["id", "name", "month", "day", "tithi", "shubhMuhurat"]
+    },
+    "FestiveNote": {
+      "title": "FestiveNote",
+      "description": "User notes and preparation checklists for upcoming celebrations.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "festivalId": { "type": "string" },
+        "festivalName": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "timeAgo": { "type": "string" },
+        "description": { "type": "string" },
+        "hasReminder": { "type": "boolean" },
+        "reminder": { "type": "string" },
+        "budget": { "type": "string" },
+        "estimatedSpend": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "checklistItems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "isCompleted": { "type": "boolean" }
+            },
+            "required": ["id", "title", "isCompleted"]
+          }
+        },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "festivalName", "title", "category"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with panchang city, reminder preference, and festive settings.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "panchangCity": { "type": "string" },
+        "muhuratAlerts": { "type": "boolean" },
+        "language": { "type": "string" },
+        "theme": { "type": "string" },
+        "lastActiveAt": { "type": "string" }
+      },
+      "required": ["userId"]
+    }
+  },
+  "firestore": {
+    "/festivals/{festivalId}": {
+      "schema": "Festival",
+      "description": "Global shared catalogue of Indian festivals, tithi, and muhurat timings."
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": "FestiveNote",
+      "description": "Private real-time preparation notes and checklists belonging to a user."
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User panchang configuration and settings."
+    }
+  }
+}

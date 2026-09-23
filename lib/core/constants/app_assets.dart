@@ -1,0 +1,27 @@
+class AppAssets {
+  AppAssets._();
+
+  static const String appLogo =
+      'https://lh3.googleusercontent.com/aida/AEtjO1UlBY3BtSzUkWJSHy9FE25dcEd8thes05Kyn8VBBs-S-b9ETWd59aOmIEwzGsmi2sf8rQZ4NZsX1KOurnMHjgdaFm52GBegFtaeaGCFFaDWyGxD-RuGsP1q7Oxj_n_3ECt8IN9fgLrJjU_nkBS7luhf8y56IBMBQBVwx9W_Tll2G08bq6qUuEaEsi-zYiEKezy_ETyP9JcOOh6JT22TvqH9IudaYnPfru3m7rBQTGQqpg4fKkyjssROGA';
+
+  static const String profileAvatar =
+      'https://lh3.googleusercontent.com/aida/AEtjO1U6ZYouUkTtjJaSMbvBK2PU7yGdGpoaaqvHlcHaMOd4t-ObZrRkw6aflPGE8Fq2T35SLMtTo--17BWqYePDFC-a_kdXNCLLcnDko1-naI2kc-FbMqCkZpd3HFCDysp09Y9_7WVGleohiDUPUK75ysl6UJf0n5mnZ3B3f5YdNOU0qAotH9-g3QrJgvOvYNa4hewxhh8_MGOPhq0lq5WEv2cBsePpiuBwDsuRPRLNTNx_nBYHeXTAtED03js';
+
+  static const String diwaliSpotlight =
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuB9HUN8I0smoZt23bz-NeyjKkYGPPO2xkthwGyJUK4JId9xJMYBc3MWlZ12-k5ufd82VU46xZwyr2nZXS_jJI73b91qobWYXtISbWiesWUIFQu5SbiZjMDFcD0fSX7Y1UAxxCguGWV9H3WHCPslhEXw9xf6PuhMYAEHFNCnQMQCb-4XnDTHpFmBcMjsEzjyQvIQuz6-jMsY27VmYZ927cUy0ZuwJNfla7Nd0qG3MafqLIome1GmCh7_';
+
+  static const String diwaliDiyas =
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuAzkpZ9LgXkk8FVxp-nd9qvXFF4I1F2KXJPVpN8D-o072L1sqWNkcbrYqJG3GO1593ZNIozVeO8FbYc_3P4ZvD7Q5kkKv-PAm0kkndjn22ecvi16DuxWIDfzqayR1loOAPk1hnhXpF1O54Fk8_ysTDSPWIsFY4wEiuHTusbJv6W6Vs85qExGB3jrBD1d_WIo-S6RP8zu2KLzgmRZcWfbjvcSpsIBATXVPoJr3MdZSXA5KJ2mDJvWn89';
+
+  static const String rangoliInspiration =
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCXuKyA_ujRm1FbLRMUjaCIakNZ3BWB-_AfM0OKi-a6CJxJid-NJtGRKuyN0sYzvJ9AfySZ2tN3aw25gMuIhcUZNUem5_C71Mtpk-Mqxb8IBPNYd_zH8pw53_i2h4-SUydv11kf1ydnONt0OdtIguQS00IClMKE49X3I6y235KGUFzAzG9VJ5d5Icjk50evo9EPR-sZAHS3eMA0oVRcI6NXgd0i_wp1Zo_o3h2PNYY8_qCOOC66a-36';
+
+  static const String deepotsavCalendar =
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuATZNwy8H2mLmx4mtovFpl1Zpa57V-m5nPnE-GZ9NclpKrOMjn50sKRhv_Usxr2-uKX3aY4RiFyJ5PjsR3vYhOPZF1JSCbTAwVl5cJGwlYeyqAzpa5uiQJeXWnyW5BTVBCqZAJILzCAlvfktDNWTiuPey8AIYpVPzrfskxGt_FqB2mldw6W2zR0g74Fn01xEIM2ldXx_JMeZtvYPvsfb24GMKhOtMBxlmRpCXg6WXzx6-I7dWO8uSEC';
+
+  static const String thaliReference =
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuA4FN55pedYGe7Rc7_btO0Wj3btQpLhAjhQqelrXHCCnUmrapGh2fg4HAk-ukNuMm__H3OdkPkZ4Gk62EfYAUEvw4hTGvqbApuuh4P_uwCly6jdBqpbaVbxzMa8-R36gEe6qG1JupFgTd3i9VW5p0Qdw5nhMZV6o9tzkWMTdyx7uJpTe6JKSgEjp_Dn66x_jtUWoXfeQagalR0-cZ9fUxhMos3z9Y7tJ3xytT2dBXMz8OC9oROP9oZA';
+
+  static const String chhathBambooSoop =
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuADjhWEtetfwKfSsePkWxMG5MC8nthsvwYZ46OixJ0tqbZsHObVMP6at2zhxdoAW57JSYnw87zSwzawxX_XLFQGknQFhlSILaZZzSB8-emo1rW7tHbf1IPO6iv-hNDAib6Ih_nuk4vGGyri45Rc2V4T0dBxscVHpw7OFkWbljwbUhH-nttERRRp9qyYTjxCQEF1dFkUeOhzM0FKb-_KUDCFuqF4dC_iyS43fuMk0qZRhUfgSqWNUO-0';
+}

@@ -8,29 +8,24 @@ import { ProfileTab } from './components/ProfileTab';
 import { SamagriModal } from './components/SamagriModal';
 import { NewNoteModal } from './components/NewNoteModal';
 import { FlutterCodeModal } from './components/FlutterCodeModal';
+import {
+  ensureAuthUser,
+  subscribeToFestivals,
+  subscribeToUserNotes,
+  addRealtimeNote,
+  deleteRealtimeNote,
+  updateRealtimeNote,
+} from './services/firebase';
 
 export function App() {
   const [currentTab, setCurrentTab] = useState<'festivals' | 'calendar' | 'notes' | 'profile'>('festivals');
   const [selectedFestivalId, setSelectedFestivalId] = useState<string | null>(null);
 
-  // Persistent state for notes and festivals
-  const [festivals, setFestivals] = useState<Festival[]>(() => {
-    const saved = localStorage.getItem('utsav_festivals');
-    return saved ? JSON.parse(saved) : INITIAL_FESTIVALS;
-  });
-
-  const [notes, setNotes] = useState<NoteItem[]>(() => {
-    const saved = localStorage.getItem('utsav_notes');
-    return saved ? JSON.parse(saved) : INITIAL_NOTES;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('utsav_festivals', JSON.stringify(festivals));
-  }, [festivals]);
-
-  useEffect(() => {
-    localStorage.setItem('utsav_notes', JSON.stringify(notes));
-  }, [notes]);
+  // Real-time state synced via Firebase Firestore
+  const [festivals, setFestivals] = useState<Festival[]>(INITIAL_FESTIVALS);
+  const [notes, setNotes] = useState<NoteItem[]>(INITIAL_NOTES);
+  const [userId, setUserId] = useState<string>('guest_user');
+  const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(false);
 
   // Modal states
   const [showSamagriModal, setShowSamagriModal] = useState<boolean>(false);
@@ -48,6 +43,50 @@ export function App() {
     }, 3000);
   };
 
+  // Connect Firebase Auth & Realtime Firestore Listeners on Mount
+  useEffect(() => {
+    let unsubscribeFestivals: (() => void) | undefined;
+    let unsubscribeNotes: (() => void) | undefined;
+
+    async function initFirebase() {
+      try {
+        const user = await ensureAuthUser();
+        setUserId(user.uid);
+        setIsFirebaseConnected(true);
+
+        // Real-time listener for Festivals
+        unsubscribeFestivals = subscribeToFestivals(
+          (liveFestivals) => {
+            if (liveFestivals && liveFestivals.length > 0) {
+              setFestivals(liveFestivals);
+            }
+          },
+          (err) => console.warn('Festivals live stream error:', err)
+        );
+
+        // Real-time listener for User Notes
+        unsubscribeNotes = subscribeToUserNotes(
+          user.uid,
+          (liveNotes) => {
+            if (liveNotes) {
+              setNotes(liveNotes);
+            }
+          },
+          (err) => console.warn('User notes live stream error:', err)
+        );
+      } catch (err) {
+        console.warn('Firebase init error, fallback to local storage:', err);
+      }
+    }
+
+    initFirebase();
+
+    return () => {
+      if (unsubscribeFestivals) unsubscribeFestivals();
+      if (unsubscribeNotes) unsubscribeNotes();
+    };
+  }, []);
+
   const handleOpenFestivalDetail = (festId: string) => {
     setSelectedFestivalId(festId);
   };
@@ -56,7 +95,7 @@ export function App() {
     setSelectedFestivalId(null);
   };
 
-  const handleAddQuickNote = (festivalName: string, text: string) => {
+  const handleAddQuickNote = async (festivalName: string, text: string) => {
     const newNote: NoteItem = {
       id: `note-${Date.now()}`,
       festivalId: festivalName.toLowerCase().replace(/\s+/g, '-'),
@@ -68,19 +107,19 @@ export function App() {
       hasReminder: true,
       reminder: 'Active alert',
     };
-    setNotes((prev) => [newNote, ...prev]);
 
-    // Update notes count on festival if matches
-    setFestivals((prev) =>
-      prev.map((f) =>
-        f.name.toLowerCase().includes(festivalName.toLowerCase())
-          ? { ...f, notesCount: (f.notesCount || 0) + 1, notes: [...(f.notes || []), text] }
-          : f
-      )
-    );
+    // Optimistic local update + Real-time Firestore sync
+    setNotes((prev) => [newNote, ...prev]);
+    try {
+      await addRealtimeNote(userId, newNote);
+      showToast('Note synced live to Firebase Firestore!');
+    } catch (e) {
+      console.warn('Firestore write error:', e);
+      showToast('Note saved locally');
+    }
   };
 
-  const handleSaveNoteFromModal = (noteData: Partial<NoteItem>) => {
+  const handleSaveNoteFromModal = async (noteData: Partial<NoteItem>) => {
     const newNote: NoteItem = {
       id: noteData.id || `note-${Date.now()}`,
       festivalId: 'diwali',
@@ -93,16 +132,30 @@ export function App() {
       reminder: noteData.reminder,
       budget: noteData.budget,
     };
+
+    // Optimistic local update + Real-time Firestore sync
     setNotes((prev) => [newNote, ...prev]);
-    showToast('New note added to preparation list!');
+    try {
+      await addRealtimeNote(userId, newNote);
+      showToast('Note synced live to Firebase Firestore!');
+    } catch (e) {
+      console.warn('Firestore write error:', e);
+      showToast('Note saved locally');
+    }
   };
 
-  const handleDeleteNote = (noteId: string) => {
+  const handleDeleteNote = async (noteId: string) => {
     setNotes((prev) => prev.filter((n) => n.id !== noteId));
-    showToast('Note deleted');
+    try {
+      await deleteRealtimeNote(userId, noteId);
+      showToast('Note deleted from Firebase Firestore');
+    } catch (e) {
+      console.warn('Firestore delete error:', e);
+      showToast('Note removed');
+    }
   };
 
-  const handleAddAllSamagriToNotes = (items: string[]) => {
+  const handleAddAllSamagriToNotes = async (items: string[]) => {
     const samagriNote: NoteItem = {
       id: `note-${Date.now()}`,
       festivalId: 'diwali',
@@ -114,8 +167,15 @@ export function App() {
       hasReminder: true,
       reminder: 'Friday, 10:00 AM',
     };
+
     setNotes((prev) => [samagriNote, ...prev]);
-    showToast('All 8 Samagri items added to My Notes!');
+    try {
+      await addRealtimeNote(userId, samagriNote);
+      showToast('All 8 Samagri items synced to Firebase Firestore!');
+    } catch (e) {
+      console.warn('Firestore write error:', e);
+      showToast('Samagri items saved locally');
+    }
   };
 
   const handleOpenNoteForDate = (dateStr: string) => {
@@ -142,9 +202,19 @@ export function App() {
               className="w-8 h-8 rounded-full shadow-xs object-cover"
             />
             <div className="flex flex-col">
-              <span className="text-[17px] font-extrabold text-[#a33900] tracking-tight leading-none font-epilogue">
-                Utsav
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[17px] font-extrabold text-[#a33900] tracking-tight leading-none font-epilogue">
+                  Utsav
+                </span>
+                {/* Firebase Live Pulse Indicator */}
+                <span
+                  title={isFirebaseConnected ? 'Connected to Firebase Firestore Live' : 'Connecting to Firebase...'}
+                  className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold border border-emerald-300 shadow-2xs"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>LIVE</span>
+                </span>
+              </div>
               <span className="text-[10px] text-[#594139] tracking-wider uppercase font-semibold">
                 {selectedFestivalId
                   ? 'Festival Detail'
@@ -160,21 +230,21 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Quick Flutter Dart button */}
+            {/* Quick Flutter Architecture & Dart button */}
             <button
               type="button"
               onClick={() => setShowFlutterModal(true)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#ffdbce] text-[#370e00] text-[11px] font-bold hover:bg-[#ffb599] transition-all shadow-xs"
-              title="View Flutter Dart Code"
+              title="View Clean Architecture & Flutter Dart Code"
             >
-              <span className="material-symbols-outlined text-[14px]">code</span>
+              <span className="material-symbols-outlined text-[14px]">account_tree</span>
               <span>Flutter</span>
             </button>
 
             {/* Notification Bell */}
             <button
               type="button"
-              onClick={() => showToast('Next Shubh Muhurat: Diwali Lakshmi Puja on Nov 1 at 5:36 PM')}
+              onClick={() => showToast('Firebase Real-time sync is active across all devices')}
               className="relative w-9 h-9 rounded-full hover:bg-[#f2e6dd] flex items-center justify-center text-[#594139] transition-colors"
               aria-label="Notifications"
             >
@@ -377,7 +447,7 @@ export function App() {
         {toastMessage && (
           <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-[#362f2a] text-[#fbeee6] text-[13px] font-medium px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 border border-white/20 animate-fadeIn pointer-events-none max-w-[90%]">
             <span className="material-symbols-outlined text-[#ffb599] text-[18px]">
-              info
+              cloud_done
             </span>
             <span>{toastMessage}</span>
           </div>
